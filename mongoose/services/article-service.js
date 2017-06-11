@@ -514,10 +514,9 @@ let self = module.exports = {
     },
     getArticlesInBookmarksOfUser(userId) {
         let deferred = Q.defer();
-        User.findById(userId).populate('bookmarks').exec(function (err, doc) {
-            console.log(chalk.blue(doc));
-            if(err) deferred.reject(err);
-            deferred.resolve(doc.bookmarks);
+        User.findById(userId).populate('bookmarks').exec(function (err, user) {
+            if (err) deferred.reject(err);
+            deferred.resolve(user.bookmarks);
         });
         return deferred.promise;
     }
