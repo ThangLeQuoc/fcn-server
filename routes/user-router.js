@@ -186,6 +186,16 @@ router.get('/:userId/articles', function (req, res) {
 /**
  * ---------- BOOKMARK REQUEST
  */
+
+router.get('/:userId/articles/bookmarks', function (req, res) {
+    let userId = req.params.userId;
+    articleService.getArticlesInBookmarksOfUser(userId).then((articles) => {
+        res.status(200).send(articles);
+    }).catch((err) => {
+        res.status(400).send(err);
+    })
+})
+
 router.put('/:userId/articles/:articleId/toggleBookmark', function (req, res) {
     let userId = req.params.userId;
     let articleId = req.params.articleId;

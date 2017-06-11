@@ -1,5 +1,6 @@
 /** Article  Service*/
 let Article = require('../models/article-model');
+let User = require('../models/user-model');
 let ObjectId = require('mongoose').Types.ObjectId;
 let DateService = require('../technical/current-date-service');
 let categoryService = require('./category-service');
@@ -508,6 +509,15 @@ let self = module.exports = {
                     });
                 }
             });
+        });
+        return deferred.promise;
+    },
+    getArticlesInBookmarksOfUser(userId) {
+        let deferred = Q.defer();
+        User.findById(userId).populate('bookmarks').exec(function (err, doc) {
+            console.log(chalk.blue(doc));
+            if(err) deferred.reject(err);
+            deferred.resolve(doc.bookmarks);
         });
         return deferred.promise;
     }
