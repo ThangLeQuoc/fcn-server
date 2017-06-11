@@ -10,6 +10,13 @@ const chalk = require('chalk');
  * User Router
  */
 
+router.route('/initBookmarks')
+    .get(function (req, res) {
+        userService.initBookmarkField().then((docs) => {
+            console.log(docs);
+            res.status(200).send(docs);
+        });
+    })
 /**
  * ------------BEGIN OF ROLE REQUEST-------------------------------------------------------------------------------- 
  */
@@ -174,6 +181,28 @@ router.get('/:userId/articles', function (req, res) {
         }
     });
 });
+
+
+/**
+ * ---------- BOOKMARK REQUEST
+ */
+router.put('/:userId/articles/:articleId/toggleBookmark', function (req, res) {
+    let userId = req.params.userId;
+    let articleId = req.params.articleId;
+    articleService.toggleBookmarkStatus(userId, articleId).then((doc) => {
+        res.status(202).send();
+    }).catch((err) => {
+        res.status(400).send(err);
+    });
+});
+
+/**
+ * 
+ */
+
+
+
+
 
 
 /**GET: Get notification from this user */

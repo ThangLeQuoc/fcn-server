@@ -46,8 +46,12 @@ let UserSchema = new Schema({
         visit_time: Number,
         comment_count: Number,
         bookmark_count: Number
+    }],
+    bookmarks: [{
+        type: ObjectId,
+        ref: 'articles'
     }]
-    
+
 });
 
 let User = mongoose.model('users', UserSchema);
