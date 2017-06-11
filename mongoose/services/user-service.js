@@ -323,6 +323,46 @@ let self = module.exports = {
         return defer.promise;
     },
 
+    checkIfArticleExistInBookmarks(userId, articleId) {
+        let deferred = Q.defer();
+        User.findById(userId, (err, user) => {
+            if (err) deferred.reject(err);
+            let bookmarks = user.bookmarks;
+            if (bookmarks.indexOf(articleId) > -1) {
+                deferred.resolve(true);
+            }
+            deferred.resolve(false);
+        });
+        return deferred.promise;
+    },
+
+    pushArticleToBookmarks(userId, articleId) {
+        let deferred = Q.defer();
+        User.findByIdAndUpdate(userId, {
+            "$push": {
+                "bookmarks": articleId
+            }
+        }, {
+            upsert: true,
+            new: true
+        }, function (err, doc) {
+            if (err) deferred.reject(err);
+            deferred.resolve(doc);
+        });
+        return deferred.promise;
+    },
+    pullArticleFromBookmarks(userId, articleId) {
+        let deferred = Q.defer();
+        User.findByIdAndUpdate(userId, {
+            "$pull": {
+                "bookmarks": articleId
+            }
+        }, function (err, user) {
+            if(err) deferred.reject(err);
+            deferred.resolve(user);
+        });
+        return deferred.promise;
+    },
 
     /** Miscellanious  */
     getIdAndUsernameWithProfileImage: function (userId) {
@@ -341,14 +381,11 @@ let self = module.exports = {
                 self.getProfileImageUrl(info.user_id).then((imageURL) => {
                     info.profileImage = imageURL;
                     defer.resolve(info);
-                }).catch((err)=>{
+                }).catch((err) => {
                     defer.reject(err);
                 })
             }
         });
         return defer.promise;
     }
-
-
-
 }

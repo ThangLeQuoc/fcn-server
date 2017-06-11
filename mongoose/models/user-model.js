@@ -48,10 +48,8 @@ let UserSchema = new Schema({
         bookmark_count: Number
     }],
     bookmarks: [{
-        article_id: {
-            type: ObjectId,
-            ref: 'articles'
-        }
+        type: ObjectId,
+        ref: 'articles'
     }]
 
 });

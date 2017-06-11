@@ -408,8 +408,6 @@ let self = module.exports = {
             let promises = tags.map((tag) => {
                 return tagService.listArticlesWithinDay(tag.tag_id, 2).then((articles) => {
                     return Q.resolve(articles);
-
-
                 }).catch((err) => {
                     return Q.reject(err);
                 });
@@ -429,7 +427,8 @@ let self = module.exports = {
                 return targetArticles;
             }).then((targetArticles) => {
                 let articlesStats = self.rateScoreOnArticleBaseOnUserPreferences(targetArticles, tags);
-                let sortedArticles = self.arrangeSuggestArticlesBaseOnScore(articlesStats);
+                let sortedArticlesWithScore = self.arrangeSuggestArticlesBaseOnScore(articlesStats);
+                let sortedArticles = self.getArticlesWithoutRatedScore(sortedArticlesWithScore);
                 defer.resolve(sortedArticles);
             });
         });
@@ -464,6 +463,15 @@ let self = module.exports = {
         return score;
     },
 
+    getArticlesWithoutRatedScore(articleList) {
+        let articles = [];
+        console.log(articleList);
+        articleList.map((stat) => {
+            articles.push(stat.article);
+        });
+        return articles;
+    },
+
     arrayContainObject(obj, list) {
         for (let index = 0; index < list.length; index++) {
             if (list[index]._id.toString() == obj._id.toString()) {
@@ -478,5 +486,30 @@ let self = module.exports = {
             return b.score - a.score;
         });
         return suggestedArticles;
+    },
+
+    toggleBookmarkStatus(userId, articleId) {
+        let deferred = Q.defer();
+        userService.findOnePromise(userId).then((user) => {
+            let bookmarks = user.bookmarks;
+            userService.checkIfArticleExistInBookmarks(userId, articleId).then((result) => {
+                if (result == true) {
+                    userService.pullArticleFromBookmarks(userId, articleId).then((user) => {
+                        deferred.resolve(user);
+                    }).catch((err) => {
+                        deferred.reject(err);
+                    })
+
+                } else {
+                    userService.pushArticleToBookmarks(userId, articleId).then((user) => {
+                        deferred.resolve(user);
+                    }).catch((err) => {
+                        deferred.reject(err);
+                    });
+                }
+            });
+        });
+        return deferred.promise;
     }
+
 }
