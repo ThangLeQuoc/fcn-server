@@ -171,7 +171,7 @@ let self = module.exports = {
             }
         }).select('articles').exec(function (err, doc) {
             if (err) defer.reject(err);
-            if (typeof doc[0] !== undefined) {
+            if (typeof doc[0] !== "undefined") {
                 for (let article of doc[0].articles) {
                     if (article == articleId) {
                         defer.resolve(true);
