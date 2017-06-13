@@ -3,11 +3,13 @@ let redisClient = require('../../../bin/redis-client/redis-client');
 let Q = require('q');
 
 let categoryCacheService = require('./category-cache-service');
-
+let articleCacheService = require('./article-cache-service');
 const chalk = require('chalk');
 
 let self = module.exports = {
-  initializeCache: function () {
-    return Q.all([categoryCacheService.initCategoryCache()]);
+  initializeCaches: function () {
+    return Q.all([categoryCacheService.initCache(),
+      articleCacheService.initCache()
+    ]);
   }
 }

@@ -8,6 +8,8 @@ const chalk = require('chalk');
 let categoryService = require('../mongoose/services/category-service');
 let articleService = require('../mongoose/services/article-service');
 let categoryCacheService = require('../mongoose/services/cache/category-cache-service');
+let articleCacheService = require('../mongoose/services/cache/article-cache-service');
+
 
 /**
  *  Category Router
@@ -24,7 +26,7 @@ router.route('/')
                     if (err) {
                         res.status(500).send(err);
                     } else {
-                        categoryCacheService.initCategoryCache();
+                        categoryCacheService.initCache();
                         res.status(200).send(docs);
                     }
                 });
@@ -45,19 +47,39 @@ router.route('/')
 
 router.route('/articles/trending')
     .get(function (req, res) {
-        articleService.findAllTrendingArticles().then((articles) => {
-            res.status(200).send(articles);
-        }).catch((err) => {
-            res.status(400).send(err);
+        redisClient.get('trendingArticles', function (err, trendingArticles) {
+            if (err) res.status(400).send(err);
+            else {
+                if (trendingArticles)
+                    res.status(200).send(JSON.parse(trendingArticles));
+                else {
+                    articleService.findAllTrendingArticles().then((articles) => {
+                        articleCacheService.initCache();
+                        res.status(200).send(articles);
+                    }).catch((err) => {
+                        res.status(400).send(err);
+                    });
+                }
+            }
         });
     });
 
 router.route('/articles/latest')
     .get(function (req, res) {
-        articleService.findAllLatestArticles().then((articles) => {
-            res.status(200).send(articles);
-        }).catch((err) => {
-            res.status(400).send(err);
+        redisClient.get('latestArticles', (err, latestArticles) => {
+            if (err) res.status(400).send(err);
+            else {
+                if (latestArticles)
+                    res.status(200).send(JSON.parse(latestArticles));
+                else {
+                    articleService.findAllLatestArticles().then((articles) => {
+                        articleCacheService.initCache();
+                        res.status(200).send(articles);
+                    }).catch((err) => {
+                        res.status(400).send(err);
+                    });
+                }
+            }
         });
     });
 

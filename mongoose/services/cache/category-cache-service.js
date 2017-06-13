@@ -7,7 +7,7 @@ let Q = require('q');
 const chalk = require('chalk');
 
 let self = module.exports = {
-  initCategoryCache: function () {
+  initCache: function () {
     let deferred = Q.defer();
     categoryService.findAll((err, categories) => {
       if (err) deferred.reject(err);

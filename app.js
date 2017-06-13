@@ -70,7 +70,7 @@ let option = config.get('database.mlab-auth');
 
 
 mongooseConnector.connectToMongo(mlabHost, option);
-cacheInitializerService.initializeCache().then(() => {
+cacheInitializerService.initializeCaches().then(() => {
   console.log(chalk.blue('All cache initialized successfully'));
 });
 // mongooseConnector.connectToMongo(localhost);
