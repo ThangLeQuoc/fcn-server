@@ -16,6 +16,11 @@
             "server": {
                 "autoReconnect": true
             }
+        },
+        "redislabs": {
+            "port": 16536,
+            "endpoint": "redis-16536.c14.us-east-1-3.ec2.cloud.redislabs.com",
+            "password": "root"
         }
     },
     "notification": {

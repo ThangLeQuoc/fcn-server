@@ -9,6 +9,7 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 var api = require('./routes/api');
 var mongooseConnector = require('./mongoose/mongoose-connection');
+let redisClient = require('./bin/redis-client/redis-client');
 var app = express();
 
 let config = require('config');
