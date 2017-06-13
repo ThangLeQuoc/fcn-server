@@ -14,6 +14,7 @@ var app = express();
 
 let config = require('config');
 
+
 /**
  *  import authentication modules
  */
@@ -28,6 +29,10 @@ let articleRouter = require('./routes/article-router');
 let notificationRouter = require('./routes/notification-router');
 
 let schedulerService = require('./mongoose/services/scheduler-service');
+let cacheInitializerService = require('./mongoose/services/cache/cache-initializer-service');
+
+
+const chalk = require('chalk');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -65,6 +70,9 @@ let option = config.get('database.mlab-auth');
 
 
 mongooseConnector.connectToMongo(mlabHost, option);
+cacheInitializerService.initializeCache().then(() => {
+  console.log(chalk.blue('All cache initialized successfully'));
+});
 // mongooseConnector.connectToMongo(localhost);
 
 /**

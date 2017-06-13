@@ -1,8 +1,13 @@
 let express = require('express');
 let router = express.Router();
+let redisClient = require('../bin/redis-client/redis-client');
+
+
+const chalk = require('chalk');
 
 let categoryService = require('../mongoose/services/category-service');
 let articleService = require('../mongoose/services/article-service');
+let categoryCacheService = require('../mongoose/services/cache/category-cache-service');
 
 /**
  *  Category Router
@@ -11,11 +16,18 @@ let articleService = require('../mongoose/services/article-service');
 router.route('/')
     /*GET: Get all categories */
     .get(function (req, res) {
-        categoryService.findAll(function (err, docs) {
-            if (err) {
-                res.status(500).send(err);
-            } else {
-                res.status(200).send(docs);
+        redisClient.get('categories', function (err, categories) {
+            if (categories)
+                res.status(200).send(JSON.parse(categories));
+            else {
+                categoryService.findAll(function (err, docs) {
+                    if (err) {
+                        res.status(500).send(err);
+                    } else {
+                        categoryCacheService.initCategoryCache();
+                        res.status(200).send(docs);
+                    }
+                });
             }
         });
     })
@@ -28,7 +40,7 @@ router.route('/')
             } else {
                 res.status(201).send();
             }
-        })
+        });
     });
 
 router.route('/articles/trending')
