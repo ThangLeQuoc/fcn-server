@@ -50,9 +50,10 @@ router.route('/articles/trending')
         redisClient.get('trendingArticles', function (err, trendingArticles) {
             if (err) res.status(400).send(err);
             else {
-                if (trendingArticles)
+                if (trendingArticles) {
+                    console.log('Already in cache');
                     res.status(200).send(JSON.parse(trendingArticles));
-                else {
+                } else {
                     articleService.findAllTrendingArticles().then((articles) => {
                         articleCacheService.initCache();
                         res.status(200).send(articles);
