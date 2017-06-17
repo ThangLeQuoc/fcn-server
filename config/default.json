@@ -33,6 +33,7 @@
     "elasticsearch": {
         "endpoint": "mercuryelastic-thanglequoc.rhcloud.com",
         "bonsaiHostEndpoint": "https://nl1ipqpenk:ac4di1guiv@first-cluster-478030895.us-west-2.bonsaisearch.net",
-        "index": "mercury"
+        "index": "mercury",
+        "article_type": "article"
     }
 }

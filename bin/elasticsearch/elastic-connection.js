@@ -19,7 +19,7 @@ let client = new elasticsearch.Client({
  * Checking connection
  */
 client.ping({
-  requestTimeout: 1000
+  requestTimeout: 2000
 }, function (err) {
   if (err) console.log(chalk.red('ElasticSearch cluster is down ....'));
   else {

@@ -12,7 +12,8 @@ var mongooseConnector = require('./mongoose/mongoose-connection');
 var app = express();
 
 let config = require('config');
-let esClient = require('./bin/elasticsearch/elastic-connection');
+
+let esClient = require('./bin/elasticsearch/elastic-client');
 /**
  *  import authentication modules
  */
@@ -82,6 +83,9 @@ app.use('/api/v2/notifications', notificationRouter);
 
 
 schedulerService.recalculateArticlesScore();
+esClient.initializeES().then(() => {
+  esClient.indexArticles();
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
