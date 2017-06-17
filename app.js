@@ -12,7 +12,7 @@ var mongooseConnector = require('./mongoose/mongoose-connection');
 var app = express();
 
 let config = require('config');
-
+let esClient = require('./bin/elasticsearch/esclient');
 /**
  *  import authentication modules
  */
