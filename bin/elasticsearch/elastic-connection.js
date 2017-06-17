@@ -4,19 +4,29 @@ let config = require('config');
 const chalk = require('chalk');
 
 
-let esHostEndpoint = config.get('elasticsearch.endpoint');
+let esHostEndpoint = config.get('elasticsearch.bonsaiHostEndpoint');
+let esIndex = config.get('elasticsearch.index');
+
+
 let client = new elasticsearch.Client({
   'host': esHostEndpoint,
-  log: 'trace'
+  log: 'info'
 });
 
+
+
+/**
+ * Checking connection
+ */
 client.ping({
   requestTimeout: 1000
-}, function(err){
-  if(err) console.log(chalk.red('ElasticSearch cluster is down ....'));
+}, function (err) {
+  if (err) console.log(chalk.red('ElasticSearch cluster is down ....'));
   else {
     console.log(chalk.green('ElasticSearch cluster connected successfully'));
   }
 });
 
-module.exports = client;  
+
+
+module.exports = client;
