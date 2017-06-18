@@ -134,7 +134,7 @@ let self = module.exports = {
         article.save(function (err, article) {
             if (err) return callback(err);
             else {
-                // return callback(null);
+                esClient.addArticleToIndex(article);
                 self.initDiscussion(article._id).then(function () {
                     return callback(null, article._id);
                 }, function (err) {
@@ -182,9 +182,10 @@ let self = module.exports = {
                         return Q.resolve(null);
                     })
                 }).then(() => {
-                    Article.findByIdAndUpdate(documentId, document, function (err) {
+                    Article.findByIdAndUpdate(documentId, document, function (err, article) {
                         if (err) defer.reject(err);
-                        defer.resolve(null);
+                        esClient.addArticleToIndex(article);
+                        defer.resolve(article);
                     });
                 });
             }
