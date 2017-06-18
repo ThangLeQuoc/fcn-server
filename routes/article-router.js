@@ -5,7 +5,7 @@ let articleService = require('../mongoose/services/article-service');
 let tagService = require('../mongoose/services/tag-service');
 let userService = require('../mongoose/services/user-service');
 let discussionService = require('../mongoose/services/discussion-service');
-let esClient = require('../bin/elasticsearch/elastic-client');
+let esClient = require('../mongoose/services/elasticsearch-client/elastic-client');
 
 
 const chalk = require('chalk');

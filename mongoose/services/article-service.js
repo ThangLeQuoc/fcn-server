@@ -8,7 +8,7 @@ let discussionService = require('./discussion-service')
 let userService = require('./user-service');
 let tagService = require('./tag-service');
 
-let esClient = require('../../bin/elasticsearch/elastic-client');
+let esClient = require('./elasticsearch-client/elastic-client');
 
 let Q = require('q');
 

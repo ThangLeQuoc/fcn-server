@@ -13,7 +13,7 @@ var app = express();
 
 let config = require('config');
 
-let esClient = require('./bin/elasticsearch/elastic-client');
+let esClient = require('./mongoose/services/elasticsearch-client/elastic-client');
 let articleService = require('./mongoose/services/article-service');
 /**
  *  import authentication modules

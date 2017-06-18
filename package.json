@@ -25,6 +25,7 @@
     "passport-auth0": "^0.6.0",
     "q": "^1.4.1",
     "request": "^2.79.0",
+    "sendgrid": "^5.1.1",
     "serve-favicon": "~2.3.0",
     "socket.io": "^1.7.3",
     "stream": "0.0.2",

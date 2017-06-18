@@ -1,4 +1,4 @@
-let esClient = require('./elastic-connection');
+let esClient = require('../../../bin/elasticsearch/elastic-connection');
 let config = require('config');
 
 
