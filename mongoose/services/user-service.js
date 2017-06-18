@@ -8,8 +8,31 @@ let config = require('config');
 const chalk = require('chalk');
 
 let tagService = require('./tag-service');
+let sendgridService = require('./sendgrid/sendgrid-service');
 
 let self = module.exports = {
+
+    initMailingRecipients: function () {
+        let deferred = Q.defer();
+        User.find({}, (err, users) => {
+            console.log(chalk.yellow(users));
+            let promises = users.map((user) => {
+                sendgridService.addRecipient(user).then(() => {
+                    return Q.resolve(user);
+                });
+            });
+
+            return Q.all(promises);
+        }).then((users) => {
+            console.log(chalk.blue(users));
+            deferred.resolve(users);
+        });
+
+        return deferred.promise;
+    },
+
+
+
 
     /**Find one user */
     findOne: function (userId, callback) {
@@ -358,7 +381,7 @@ let self = module.exports = {
                 "bookmarks": articleId
             }
         }, function (err, user) {
-            if(err) deferred.reject(err);
+            if (err) deferred.reject(err);
             deferred.resolve(user);
         });
         return deferred.promise;

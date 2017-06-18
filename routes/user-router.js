@@ -5,6 +5,7 @@ let articleService = require('../mongoose/services/article-service');
 let roleService = require('../mongoose/services/role-service');
 let notificationService = require('../mongoose/services/notification/notification-service');
 
+let sendgridService = require('../mongoose/services/sendgrid/sendgrid-service');
 const chalk = require('chalk');
 /**
  * User Router
@@ -84,6 +85,29 @@ router.route('/roles/:roleId')
  * 
  */
 
+/**
+ * ------- MAILING REQUEST
+ */
+router.route('/mail/recipients')
+    .get((req, res) => {
+        sendgridService.getRecipients().then((recipients) => {
+            res.status(200).send(recipients);
+        }).catch(err => {
+            res.status(400).send(err);
+        })
+    });
+
+router.route('/mail/recipients/init')
+    .put((req, res) => {
+        userService.initMailingRecipients().then(() => {
+            res.status(202).send();
+        }).catch(err => {
+            res.status(400).send(err);
+        });
+    });
+/**
+ * 
+ */
 
 /**
  * ------------ BEGIN OF INFORMATIONAL USER REQUEST  ---------------------------------------------------

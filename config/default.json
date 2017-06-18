@@ -36,7 +36,11 @@
         "index": "mercury",
         "article_type": "article"
     },
-    "sendgird": {
-        "apikey": "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"
+    "sendgrid": {
+        "apikey": "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",
+        "MercuryEmail": "silverhair.guy@gmail.com",
+        "requestPath": {
+            "recipients": "/v3/contactdb/recipients"
+        }
     }
 }
