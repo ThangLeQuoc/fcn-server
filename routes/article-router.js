@@ -5,6 +5,8 @@ let articleService = require('../mongoose/services/article-service');
 let tagService = require('../mongoose/services/tag-service');
 let userService = require('../mongoose/services/user-service');
 let discussionService = require('../mongoose/services/discussion-service');
+let esClient = require('../bin/elasticsearch/elastic-client');
+
 
 const chalk = require('chalk');
 
@@ -35,6 +37,18 @@ router.route('/initDiscussion')
         res.status(202).send();
     });
 
+/**
+ * Elastic Search 
+ */
+
+router.get('/search', function (req, res) {
+    let queryText = req.query.content;
+    esClient.searchArticle(queryText).then((result) => {
+        res.status(200).send(result);
+    }).catch(err => {
+        res.status(200).send(err);
+    });
+});
 
 /** Article Router */
 router.route('/')
