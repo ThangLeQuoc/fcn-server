@@ -1,6 +1,5 @@
 let esClient = require('./elastic-connection');
 let config = require('config');
-let articleService = require('../../mongoose/services/article-service');
 
 
 let Q = require('q');
@@ -91,25 +90,7 @@ let self = module.exports = {
     return deferred.promise;
   },
 
-  indexArticles: function () {
-    let deferred = Q.defer();
-    articleService.findAllPromise().then((articles) => {
-      let promises = articles.map((article) => {
-        self.addArticleToIndex(article).then((result) => {
-          return Q.resolve(article);
-        }).catch(err => {
-          return Q.reject(err);
-        });
-      });
-      return Q.all(promises);
-    }).then((articles) => {
-      console.log(chalk.green('All articles has been indexed ! '));
-      deferred.resolve(articles);
-    }).catch(err => {
-      deferred.reject(err);
-    });
-    return deferred.promise;
-  },
+  
 
   indexContainArticle: function (article) {
     let deferred = Q.defer();

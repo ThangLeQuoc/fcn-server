@@ -7,6 +7,9 @@ let categoryService = require('./category-service');
 let discussionService = require('./discussion-service')
 let userService = require('./user-service');
 let tagService = require('./tag-service');
+
+let esClient = require('../../bin/elasticsearch/elastic-client');
+
 let Q = require('q');
 
 const chalk = require('chalk');
@@ -517,6 +520,26 @@ let self = module.exports = {
         User.findById(userId).populate('bookmarks').exec(function (err, user) {
             if (err) deferred.reject(err);
             deferred.resolve(user.bookmarks);
+        });
+        return deferred.promise;
+    },
+
+    indexArticles: function () {
+        let deferred = Q.defer();
+        self.findAllPromise().then((articles) => {
+            let promises = articles.map((article) => {
+                esClient.addArticleToIndex(article).then((result) => {
+                    return Q.resolve(article);
+                }).catch(err => {
+                    return Q.reject(err);
+                });
+            });
+            return Q.all(promises);
+        }).then((articles) => {
+            console.log(chalk.green('All articles has been indexed ! '));
+            deferred.resolve(articles);
+        }).catch(err => {
+            deferred.reject(err);
         });
         return deferred.promise;
     }
