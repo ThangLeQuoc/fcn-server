@@ -90,8 +90,6 @@ let self = module.exports = {
     return deferred.promise;
   },
 
-  
-
   indexContainArticle: function (article) {
     let deferred = Q.defer();
     esClient.exists({

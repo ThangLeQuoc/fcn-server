@@ -91,6 +91,7 @@ router.route('/roles/:roleId')
 router.route('/mail/recipients')
     .get((req, res) => {
         sendgridService.getRecipients().then((recipients) => {
+            //sendgridService.addRecipientsToList(1523296, recipients);
             res.status(200).send(recipients);
         }).catch(err => {
             res.status(400).send(err);
@@ -105,8 +106,18 @@ router.route('/mail/recipients/init')
             res.status(400).send(err);
         });
     });
+
+router.route('/mail/recipients/lists')
+    .get((req, res) => {
+        sendgridService.getLists().then((recipientsList) => {
+            res.status(200).send(recipientsList);
+        }).catch(err => {
+            res.status(400).send(err);
+        });
+    });
+
 /**
- * 
+ *  ---------- END OF MAILING REQUEST ------------------------------------------------------------------
  */
 
 /**
@@ -115,6 +126,7 @@ router.route('/mail/recipients/init')
 router.route('/')
     /**GET: Get all users */
     .get(function (req, res) {
+        userService.findTargetedUserInterestedInTags(null);
         userService.findAll(function (err, docs) {
             if (err) {
                 res.status(500).send(err);

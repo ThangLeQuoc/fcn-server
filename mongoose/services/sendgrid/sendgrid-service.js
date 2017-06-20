@@ -67,7 +67,21 @@ let self = module.exports = {
 
     sg.API(request, (err, response) => {
       if (err) deferred.reject(err);
-      deferred.resolve(response.body);
+      deferred.resolve(response.body.recipients);
+    });
+    return deferred.promise;
+  },
+
+  getRecipientIdByEmail: function (email) {
+    let deferred = Q.defer();
+    let recipientId = undefined;
+    self.getRecipients().then((recipients) => {
+      recipients.map(recipient => {
+        if (recipient.email === email)
+          deferred.resolve(recipient.id);
+      });
+    }).catch(err => {
+      deferred.reject(err);
     });
     return deferred.promise;
   },
@@ -75,8 +89,9 @@ let self = module.exports = {
   createList: function (listname) {
     let deferred = Q.defer();
     let request = sg.emptyRequest();
+    let name = listname.toLowerCase().replace(/\s/g, "");
     request.body = {
-      "name": listname
+      "name": name
     };
 
     request.method = 'POST';
@@ -95,7 +110,7 @@ let self = module.exports = {
     request.path = listsRequestPath;
     sg.API(request, (err, response) => {
       if (err) deferred.reject(err);
-      deferred.resolve(response.body);
+      deferred.resolve(response.body.lists);
     });
     return deferred.promise;
   },
@@ -110,6 +125,50 @@ let self = module.exports = {
       if (err) deferred.reject(err);
       deferred.resolve(response.body);
     })
+    return deferred.promise;
+  },
+
+
+  createListWithRecipients: function (listName, users) {
+    let deferred = Q.defer();
+    let recipientsId = [];
+    let listId = undefined;
+    self.createList(listName).then((list) => {
+        listId = list.id;
+        return Q.Promise((resolve, reject) => {
+          self.getRecipients().then(recipientRecords => {
+            users.map(user => {
+              for (let record of recipientRecords) {
+                if (record.email === user.email && recipientsId.indexOf(record.id) < 0) {
+                  recipientsId.push(record.id);
+                }
+              }
+            });
+            resolve(recipientsId);
+          });
+        });
+      })
+      .then((recipientIdList) => {
+        console.log(chalk.yellow(recipientIdList));
+        self.addRecipientsToList(listId, recipientIdList).then((response) => {
+          deferred.resolve(response);
+        });
+      }).catch((err) => {
+        deferred.reject(err);
+      });
+    return deferred.promise;
+  },
+
+  addRecipientsToList: function (listId, recipients) {
+    let deferred = Q.defer();
+    let request = sg.emptyRequest();
+    request.body = recipients;
+    request.method = 'POST';
+    request.path = listsRequestPath + '/' + listId + '/recipients';
+    sg.API(request, (err, response) => {
+      if (err) deferred.reject(err);
+      deferred.resolve(response.body);
+    });
     return deferred.promise;
   }
 }
