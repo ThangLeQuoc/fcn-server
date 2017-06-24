@@ -136,7 +136,7 @@ let self = module.exports = {
             if (err) return callback(err);
             else {
                 userService.findTargetedUserInterestedInTags(article.tags).then((interestedUsers) => {
-                    sendgridService.createListWithRecipients(article.title, interestedUsers);
+                    //sendgridService.createListWithRecipients(article.title, interestedUsers);
                 });
                 esClient.addArticleToIndex(article);
                 self.initDiscussion(article._id).then(function () {
