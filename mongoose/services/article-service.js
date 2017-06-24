@@ -8,7 +8,8 @@ let discussionService = require('./discussion-service')
 let userService = require('./user-service');
 let tagService = require('./tag-service');
 
-let esClient = require('../../bin/elasticsearch/elastic-client');
+let esClient = require('./elasticsearch-client/elastic-client');
+let sendgridService = require('./sendgrid/sendgrid-service');
 
 let Q = require('q');
 
@@ -134,6 +135,9 @@ let self = module.exports = {
         article.save(function (err, article) {
             if (err) return callback(err);
             else {
+                userService.findTargetedUserInterestedInTags(article.tags).then((interestedUsers) => {
+                    //sendgridService.createListWithRecipients(article.title, interestedUsers);
+                });
                 esClient.addArticleToIndex(article);
                 self.initDiscussion(article._id).then(function () {
                     return callback(null, article._id);
@@ -206,6 +210,7 @@ let self = module.exports = {
                 return callback(err);
             }).then(() => {
                 Article.findByIdAndRemove(documentId, function (err) {
+                    esClient.initializeES();
                     if (err) return callback(err);
                     else {
                         return callback(null);
