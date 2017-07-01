@@ -40,6 +40,9 @@ let self = module.exports = {
             "description": {
               type: "string"
             },
+            "header_image": {
+              type: "string"
+            },
             "content": {
               type: "string"
             },
@@ -74,6 +77,7 @@ let self = module.exports = {
       body: {
         "title": article.title,
         "description": article.description,
+        "header_image": article.header_image,
         "content": article.content,
         "tags": article.tags,
         "suggest": {
@@ -115,8 +119,9 @@ let self = module.exports = {
           }
         }
       }
-    }).then((err, result) => {
-      if(err) deferred.reject(err);
+    }).then((result, err) => {
+      if (err)
+        deferred.reject(err);
       deferred.resolve(result);
     });
     return deferred.promise;
