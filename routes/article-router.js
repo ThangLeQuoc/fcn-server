@@ -42,16 +42,6 @@ router.route('/initDiscussion')
  */
 
 router.get('/search', function (req, res) {
-    let queryText = req.query.content;
-    esClient.searchArticle(queryText).then((result) => {
-        res.status(200).send(result);
-    }).catch(err => {
-        res.status(200).send(err);
-    });
-});
-
-router.get('/search', function (req, res) {
-    console.log(chalk.green('Do search'));
     let queryText = req.query.q;
     esClient.searchArticle(queryText).then((result) => {
         res.status(200).send(result.hits.hits);
