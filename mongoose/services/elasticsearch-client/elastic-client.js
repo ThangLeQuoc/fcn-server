@@ -122,7 +122,6 @@ let self = module.exports = {
     }).then((result, err) => {
       if (err)
         deferred.reject(err);
-
       deferred.resolve(result);
     });
     return deferred.promise;

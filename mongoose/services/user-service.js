@@ -8,8 +8,31 @@ let config = require('config');
 const chalk = require('chalk');
 
 let tagService = require('./tag-service');
+let sendgridService = require('./sendgrid/sendgrid-service');
 
 let self = module.exports = {
+
+    initMailingRecipients: function () {
+        let deferred = Q.defer();
+        User.find({}, (err, users) => {
+            console.log(chalk.yellow(users));
+            let promises = users.map((user) => {
+                sendgridService.addRecipient(user).then(() => {
+                    return Q.resolve(user);
+                });
+            });
+
+            return Q.all(promises);
+        }).then((users) => {
+            console.log(chalk.blue(users));
+            deferred.resolve(users);
+        });
+
+        return deferred.promise;
+    },
+
+
+
 
     /**Find one user */
     findOne: function (userId, callback) {
@@ -39,6 +62,15 @@ let self = module.exports = {
             if (err) return callback(err);
             return callback(null, docs);
         });
+    },
+
+    findAllPromise: function () {
+        let deferred = Q.defer();
+        User.find((err, users) => {
+            if (err) deferred.reject(err);
+            deferred.resolve(users);
+        });
+        return deferred.promise;
     },
 
     /** Save new User document */
@@ -358,7 +390,7 @@ let self = module.exports = {
                 "bookmarks": articleId
             }
         }, function (err, user) {
-            if(err) deferred.reject(err);
+            if (err) deferred.reject(err);
             deferred.resolve(user);
         });
         return deferred.promise;
@@ -387,5 +419,28 @@ let self = module.exports = {
             }
         });
         return defer.promise;
+    },
+
+    findTargetedUserInterestedInTags: function (targetTags) {
+        let deferred = Q.defer();
+        let targetedUsers = [];
+        self.findAllPromise().then((users) => {
+            let promises = users.map((user) => {
+                return self.findFavoriteTags(user._id).then((tags) => {
+                    tags.map(favoriteTag => {
+                        for (let tag of targetTags) {
+                            if (favoriteTag.tag_id.toString() === tag.tag_id.toString()) {
+                                targetedUsers.push(user);
+                                return Q.resolve(user);
+                            }
+                        }
+                    });
+                });
+            });
+            return Q.all(promises);
+        }).then((result) => {
+            deferred.resolve(targetedUsers);
+        });
+        return deferred.promise;
     }
 }

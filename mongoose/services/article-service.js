@@ -7,6 +7,10 @@ let categoryService = require('./category-service');
 let discussionService = require('./discussion-service')
 let userService = require('./user-service');
 let tagService = require('./tag-service');
+
+let esClient = require('./elasticsearch-client/elastic-client');
+let sendgridService = require('./sendgrid/sendgrid-service');
+
 let Q = require('q');
 
 const chalk = require('chalk');
@@ -131,7 +135,10 @@ let self = module.exports = {
         article.save(function (err, article) {
             if (err) return callback(err);
             else {
-                // return callback(null);
+                userService.findTargetedUserInterestedInTags(article.tags).then((interestedUsers) => {
+                    //sendgridService.createListWithRecipients(article.title, interestedUsers);
+                });
+                esClient.addArticleToIndex(article);
                 self.initDiscussion(article._id).then(function () {
                     return callback(null, article._id);
                 }, function (err) {
@@ -179,9 +186,10 @@ let self = module.exports = {
                         return Q.resolve(null);
                     })
                 }).then(() => {
-                    Article.findByIdAndUpdate(documentId, document, function (err) {
+                    Article.findByIdAndUpdate(documentId, document, function (err, article) {
                         if (err) defer.reject(err);
-                        defer.resolve(null);
+                        esClient.addArticleToIndex(article);
+                        defer.resolve(article);
                     });
                 });
             }
@@ -202,6 +210,7 @@ let self = module.exports = {
                 return callback(err);
             }).then(() => {
                 Article.findByIdAndRemove(documentId, function (err) {
+                    esClient.initializeES();
                     if (err) return callback(err);
                     else {
                         return callback(null);
@@ -517,6 +526,26 @@ let self = module.exports = {
         User.findById(userId).populate('bookmarks').exec(function (err, user) {
             if (err) deferred.reject(err);
             deferred.resolve(user.bookmarks);
+        });
+        return deferred.promise;
+    },
+
+    indexArticles: function () {
+        let deferred = Q.defer();
+        self.findAllPromise().then((articles) => {
+            let promises = articles.map((article) => {
+                esClient.addArticleToIndex(article).then((result) => {
+                    return Q.resolve(article);
+                }).catch(err => {
+                    return Q.reject(err);
+                });
+            });
+            return Q.all(promises);
+        }).then((articles) => {
+            console.log(chalk.green('All articles has been indexed ! '));
+            deferred.resolve(articles);
+        }).catch(err => {
+            deferred.reject(err);
         });
         return deferred.promise;
     }
