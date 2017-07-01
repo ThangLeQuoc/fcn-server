@@ -36,6 +36,16 @@ router.route('/initDiscussion')
     });
 
 
+router.get('/search', function (req, res) {
+    console.log(chalk.green('Do search'));
+    let queryText = req.query.q;
+    esClient.searchArticle(queryText).then((result) => {
+        res.status(200).send(result.hits.hits);
+    }).catch(err => {
+        res.status(200).send(err);
+    });
+});
+
 /** Article Router */
 router.route('/')
     /** GET: Get all articles */
