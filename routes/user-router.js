@@ -5,7 +5,7 @@ let articleService = require('../mongoose/services/article-service');
 let roleService = require('../mongoose/services/role-service');
 let notificationService = require('../mongoose/services/notification/notification-service');
 
-let sendgridService = require('../mongoose/services/sendgrid/sendgrid-service');
+let tokenHandler = require('../mongoose/technical/token-handler');
 const chalk = require('chalk');
 /**
  * User Router
@@ -85,48 +85,25 @@ router.route('/roles/:roleId')
  * 
  */
 
-/**
- * ------- MAILING REQUEST
- */
-router.route('/mail/recipients')
-    .get((req, res) => {
-        sendgridService.getRecipients().then((recipients) => {
-            //sendgridService.addRecipientsToList(1523296, recipients);
-            res.status(200).send(recipients);
-        }).catch(err => {
-            res.status(400).send(err);
-        })
-    });
 
-router.route('/mail/recipients/init')
-    .put((req, res) => {
-        userService.initMailingRecipients().then(() => {
-            res.status(202).send();
-        }).catch(err => {
-            res.status(400).send(err);
-        });
-    });
-
-router.route('/mail/recipients/lists')
-    .get((req, res) => {
-        sendgridService.getLists().then((recipientsList) => {
-            res.status(200).send(recipientsList);
-        }).catch(err => {
-            res.status(400).send(err);
-        });
-    });
-
-/**
- *  ---------- END OF MAILING REQUEST ------------------------------------------------------------------
- */
 
 /**
  * ------------ BEGIN OF INFORMATIONAL USER REQUEST  ---------------------------------------------------
  */
 router.route('/')
+    .all((req, res, next) => {
+        let token = req.body.token || req.query.token || req.headers['authorization'];
+        tokenHandler.verifyAdministratorToken(token).then((result) => {
+            if (result)
+                next();
+            else
+                res.status(403).send();
+        }).catch(err => {
+            res.status(400).send(err);
+        });
+    })
     /**GET: Get all users */
     .get(function (req, res) {
-        userService.findTargetedUserInterestedInTags(null);
         userService.findAll(function (err, docs) {
             if (err) {
                 res.status(500).send(err);
@@ -200,9 +177,17 @@ router.route('/:userId/image')
 router.route('/:userId/togglestatus')
     .put(function (req, res) {
         let userId = req.params.userId;
-        userService.toggleEnable(userId, function (err) {
-            if (err) res.status(404).send(err);
-            res.status(202).send();
+        let token = req.body.token || req.query.token || req.headers['authorization'];
+        tokenHandler.verifyAdministratorToken(token).then((result) => {
+            if (result) {
+                userService.toggleEnable(userId, function (err) {
+                    if (err) res.status(404).send(err);
+                    console.log(chalk.blue('toggle success'));
+                    res.status(202).send();
+                });
+            } else res.status(403).send()
+        }).catch(err => {
+            res.status(400).send(err);
         });
     });
 

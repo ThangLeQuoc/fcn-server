@@ -22,7 +22,6 @@ let self = module.exports = {
     esClient.indices.exists({
       index: esIndex
     }).then((result) => {
-      console.log(chalk.blue('Index Mercury exist: ' + result));
       if (result === false) {
         esClient.indices.create({
           index: esIndex
@@ -41,6 +40,9 @@ let self = module.exports = {
               type: "string"
             },
             "header_image": {
+              type: "string"
+            },
+            "category": {
               type: "string"
             },
             "content": {
@@ -78,11 +80,9 @@ let self = module.exports = {
         "title": article.title,
         "description": article.description,
         "header_image": article.header_image,
+        "category": article.category,
         "content": article.content,
-        "tags": article.tags,
-        "suggest": {
-          "input": article.title.split(" ")
-        }
+        "tags": article.tags
       }
     }).then((result, err) => {
       if (err) {

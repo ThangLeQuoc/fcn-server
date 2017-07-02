@@ -1,5 +1,7 @@
 /** User Service: provide methods on User Model */
 let User = require('../models/user-model');
+let Role = require('../models/role-model');
+
 let ObjectId = require('mongoose').Types.ObjectId;
 let Q = require('q');
 let gravatar = require('gravatar');
@@ -8,28 +10,10 @@ let config = require('config');
 const chalk = require('chalk');
 
 let tagService = require('./tag-service');
-let sendgridService = require('./sendgrid/sendgrid-service');
 
 let self = module.exports = {
 
-    initMailingRecipients: function () {
-        let deferred = Q.defer();
-        User.find({}, (err, users) => {
-            console.log(chalk.yellow(users));
-            let promises = users.map((user) => {
-                sendgridService.addRecipient(user).then(() => {
-                    return Q.resolve(user);
-                });
-            });
 
-            return Q.all(promises);
-        }).then((users) => {
-            console.log(chalk.blue(users));
-            deferred.resolve(users);
-        });
-
-        return deferred.promise;
-    },
 
 
 
@@ -118,7 +102,7 @@ let self = module.exports = {
          */
         if (ObjectId.isValid(userId)) {
             self.findOnePromise(userId).then(function (doc) {
-                let currentStatus = doc.enable;
+                let currentStatus = doc.enabled;
                 self.setAccountStatus(userId, currentStatus).then(function () {
                     return callback(null);
                 }, function (err) {
@@ -137,8 +121,9 @@ let self = module.exports = {
     setAccountStatus: function (userId, currentStatus) {
         let defer = Q.defer();
         let newStatus = !currentStatus;
+        console.log(chalk.blue('Current status: '+currentStatus));
         User.findByIdAndUpdate(userId, {
-            enable: newStatus
+            "enabled": newStatus
         }, function (err) {
             if (err) return defer.reject(err);
             return defer.resolve(null);
@@ -441,6 +426,21 @@ let self = module.exports = {
         }).then((result) => {
             deferred.resolve(targetedUsers);
         });
+        return deferred.promise;
+    },
+
+    checkUserIsAdministrator(userId) {
+        User.findById(userId).populate('role').exec((err, user) => {
+            if (err) deferred.reject(err);
+            if (!user.role)
+                deferred.resolve(false);
+            else if (user.role.name == "Administrator") {
+                deferred.resolve(true);
+            }
+
+            deferred.resolve(false);
+        })
+        let deferred = Q.defer();
         return deferred.promise;
     }
 }
