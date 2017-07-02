@@ -102,7 +102,7 @@ let self = module.exports = {
          */
         if (ObjectId.isValid(userId)) {
             self.findOnePromise(userId).then(function (doc) {
-                let currentStatus = doc.enable;
+                let currentStatus = doc.enabled;
                 self.setAccountStatus(userId, currentStatus).then(function () {
                     return callback(null);
                 }, function (err) {
@@ -121,8 +121,9 @@ let self = module.exports = {
     setAccountStatus: function (userId, currentStatus) {
         let defer = Q.defer();
         let newStatus = !currentStatus;
+        console.log(chalk.blue('Current status: '+currentStatus));
         User.findByIdAndUpdate(userId, {
-            enable: newStatus
+            "enabled": newStatus
         }, function (err) {
             if (err) return defer.reject(err);
             return defer.resolve(null);

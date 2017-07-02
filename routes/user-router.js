@@ -177,9 +177,17 @@ router.route('/:userId/image')
 router.route('/:userId/togglestatus')
     .put(function (req, res) {
         let userId = req.params.userId;
-        userService.toggleEnable(userId, function (err) {
-            if (err) res.status(404).send(err);
-            res.status(202).send();
+        let token = req.body.token || req.query.token || req.headers['authorization'];
+        tokenHandler.verifyAdministratorToken(token).then((result) => {
+            if (result) {
+                userService.toggleEnable(userId, function (err) {
+                    if (err) res.status(404).send(err);
+                    console.log(chalk.blue('toggle success'));
+                    res.status(202).send();
+                });
+            } else res.status(403).send()
+        }).catch(err => {
+            res.status(400).send(err);
         });
     });
 
