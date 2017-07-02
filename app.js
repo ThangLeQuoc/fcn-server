@@ -13,6 +13,7 @@ var app = express();
 
 let config = require('config');
 
+const chalk = require('chalk');
 let esClient = require('./mongoose/services/elasticsearch-client/elastic-client');
 let articleService = require('./mongoose/services/article-service');
 /**
@@ -27,6 +28,7 @@ let categoryRouter = require('./routes/category-router');
 let userRouter = require('./routes/user-router');
 let articleRouter = require('./routes/article-router');
 let notificationRouter = require('./routes/notification-router');
+let technicalRouter = require('./routes/technical-router');
 
 let schedulerService = require('./mongoose/services/scheduler-service');
 
@@ -81,12 +83,17 @@ app.use('/api/v2/categories', categoryRouter);
 app.use('/api/v2/articles', articleRouter);
 app.use('/api/v2/users', userRouter);
 app.use('/api/v2/notifications', notificationRouter);
-
+app.use('/api/v2/technical', technicalRouter);
 
 schedulerService.recalculateArticlesScore();
 esClient.initializeES().then(() => {
   articleService.indexArticles();
 });
+
+let mode = config.get('mode');
+console.log(chalk.yellow('Mode: '+mode));
+let key = process.env.awskey;
+console.log('Amazon Key: '+key); 
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

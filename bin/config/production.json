@@ -1,9 +1,8 @@
 {
-    "auth0Strategy": {
-        "DOMAIN": "",
-        "CLIENT_ID": "",
-        "CLIENT_SECRET": "",
-        "CALLBACK_URL": ""
+    "mode": "Production",
+    "aws-key": "",
+    "jwt": {
+        "secret": "MercuryNewsIsAnAwesomePlaceToStay"
     },
 
     "database": {
@@ -11,7 +10,37 @@
         "mlab-host": "ds135790.mlab.com:35790/frogcoffeedb",
         "mlab-auth": {
             "user": "root",
-            "pass": "root"
+            "pass": "root",
+            "autoReconnect": true,
+            "server": {
+                "autoReconnect": true
+            }
+        }
+    },
+    "notification": {
+        "type": [{
+            "name": "mentioned"
+        }, {
+            "name": "tagged"
+        }]
+    },
+    "articlesScoreUpdateInterval": 1800000,
+    "auth0ProfileImage": {
+        "path": "https://cdn.auth0.com/avatars/",
+        "extension-type": ".png"
+    },
+    "elasticsearch": {
+        "endpoint": "mercuryelastic-thanglequoc.rhcloud.com",
+        "bonsaiHostEndpoint": "https://nl1ipqpenk:ac4di1guiv@first-cluster-478030895.us-west-2.bonsaisearch.net",
+        "index": "mercury",
+        "article_type": "article"
+    },
+    "sendgrid": {
+        "apikey": "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",
+        "MercuryEmail": "silverhair.guy@gmail.com",
+        "requestPath": {
+            "recipients": "/v3/contactdb/recipients",
+            "lists": "/v3/contactdb/lists"
         }
     }
 }
