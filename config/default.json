@@ -1,4 +1,6 @@
 {
+    "mode": "Development",
+    "aws-key": "",
     "jwt": {
         "secret": "MercuryNewsIsAnAwesomePlaceToStay"
     },

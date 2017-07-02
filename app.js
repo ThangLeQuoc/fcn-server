@@ -13,6 +13,7 @@ var app = express();
 
 let config = require('config');
 
+const chalk = require('chalk');
 let esClient = require('./mongoose/services/elasticsearch-client/elastic-client');
 let articleService = require('./mongoose/services/article-service');
 /**
@@ -87,6 +88,11 @@ schedulerService.recalculateArticlesScore();
 esClient.initializeES().then(() => {
   articleService.indexArticles();
 });
+
+let mode = config.get('mode');
+console.log(chalk.yellow('Mode: '+mode));
+let key = config.get('aws-key');
+console.log('Amazon Key: '+key); 
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
