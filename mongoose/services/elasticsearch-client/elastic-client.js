@@ -43,6 +43,9 @@ let self = module.exports = {
             "header_image": {
               type: "string"
             },
+            "category": {
+              type: "string"
+            },
             "content": {
               type: "string"
             },
@@ -78,11 +81,9 @@ let self = module.exports = {
         "title": article.title,
         "description": article.description,
         "header_image": article.header_image,
+        "category": article.category,
         "content": article.content,
-        "tags": article.tags,
-        "suggest": {
-          "input": article.title.split(" ")
-        }
+        "tags": article.tags
       }
     }).then((result, err) => {
       if (err) {
