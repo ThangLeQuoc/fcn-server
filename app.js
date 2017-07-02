@@ -91,7 +91,7 @@ esClient.initializeES().then(() => {
 
 let mode = config.get('mode');
 console.log(chalk.yellow('Mode: '+mode));
-let key = config.get('aws-key');
+let key = process.env.aws-key;
 console.log('Amazon Key: '+key); 
 
 // catch 404 and forward to error handler
