@@ -92,23 +92,23 @@ router.route('/roles/:roleId')
  */
 router.route('/')
     .all((req, res, next) => {
-        console.log('lol');
-        next();
+        let token = req.body.token || req.query.token || req.headers['authorization'];
+        tokenHandler.verifyAdministratorToken(token).then((result) => {
+            if (result)
+                next();
+            else
+                res.status(403).send();
+        }).catch(err => {
+            res.status(400).send(err);
+        });
     })
     /**GET: Get all users */
     .get(function (req, res) {
-        let token = req.body.token || req.query.token || req.headers['authorization'];
-        tokenHandler.decodeToken(token).then((result) => {
-            if (result) {
-                userService.findAll(function (err, docs) {
-                    if (err) {
-                        res.status(500).send(err);
-                    } else {
-                        res.status(200).send(docs);
-                    }
-                });
+        userService.findAll(function (err, docs) {
+            if (err) {
+                res.status(500).send(err);
             } else {
-                res.status(403).send();
+                res.status(200).send(docs);
             }
         });
     })

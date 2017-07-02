@@ -4,6 +4,7 @@
 let trackerService = require('../../mongoose/services/tracker-service');
 
 let notificationService = require('../../mongoose/services/notification/notification-service');
+let tokenHandler = require('../../mongoose/technical/token-handler');
 
 let socketsConnectionManager = require('./sockets-connection-manager');
 const chalk = require('chalk');
@@ -20,7 +21,7 @@ let self = module.exports = function (socket) {
         trackerService.trackUserCategory(data);
     });
 
-    socket.on('tags browsing', function(data){
+    socket.on('tags browsing', function (data) {
         trackerService.trackUserTags(data);
     });
 
@@ -31,12 +32,18 @@ let self = module.exports = function (socket) {
     socket.on('subscribeNotification', function (data) {
         // Get new notification by user_id here ....
         let userId = data.user_id;
-        notificationService.findbyUser(userId, function (err, notifications) {
-            if (err) {
-                socket.emit('failure');
-            }
-            socket.emit('sendNotificationsToUser', notifications);
-        });
+        let token = data.token;
+        let result = tokenHandler.verifyUserIdentity(userId, token);
+        if (result) {
+            notificationService.findbyUser(userId, function (err, notifications) {
+                if (err) {
+                    socket.emit('failure');
+                }
+                socket.emit('sendNotificationsToUser', notifications);
+            });
+        } else {
+            socket.emit('failure');
+        }
     });
 
     socket.on('pushNotificationToUsers', function (users) {

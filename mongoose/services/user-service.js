@@ -428,21 +428,15 @@ let self = module.exports = {
         return deferred.promise;
     },
 
-    getUserIdFromAuth0TokenId(auth0Id){
-        return auth0Id.slice(6, 30);
-    },
-
-    checkUserIsAdministrator(auth0Id) {
-        let userId = self.getUserIdFromAuth0TokenId(auth0Id);
+    checkUserIsAdministrator(userId) {
         User.findById(userId).populate('role').exec((err, user) => {
             if (err) deferred.reject(err);
             if (!user.role)
                 deferred.resolve(false);
-            else {
-                if (user.role.name == "Administrator") {
-                    deferred.resolve(true);
-                }
+            else if (user.role.name == "Administrator") {
+                deferred.resolve(true);
             }
+
             deferred.resolve(false);
         })
         let deferred = Q.defer();

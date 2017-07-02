@@ -6,7 +6,7 @@ let tagService = require('../mongoose/services/tag-service');
 let userService = require('../mongoose/services/user-service');
 let discussionService = require('../mongoose/services/discussion-service');
 let esClient = require('../mongoose/services/elasticsearch-client/elastic-client');
-
+let tokenHandler = require('../mongoose/technical/token-handler');
 
 const chalk = require('chalk');
 
@@ -77,24 +77,33 @@ router.route('/')
     /** POST: Submit new article to server*/
     .post(function (req, res) {
         let article = req.body;
-        articleService.save(article, function (err, articleId) {
-            if (err) {
-                res.status(400).send(err);
-            } else {
-                if (article.tags) {
-                    let tagsId = [];
-                    for (let tag of article.tags) {
-                        tagsId.push(tag.tag_id);
-                    }
-                    tagService.pushArticleToTags(articleId, tagsId).then(() => {
-                        res.status(201).send();
-                    }).catch((err) => {
+        /*Protect route */
+        let token = req.body.token || req.query.token || req.headers['authorization'];
+        tokenHandler.verifyAdministratorToken(token).then((result) => {
+            if (result) {
+                articleService.save(article, function (err, articleId) {
+                    if (err) {
                         res.status(400).send(err);
-                    })
-                } else {
-                    res.status(201).send();
-                }
-            }
+                    } else {
+                        if (article.tags) {
+                            let tagsId = [];
+                            for (let tag of article.tags) {
+                                tagsId.push(tag.tag_id);
+                            }
+                            tagService.pushArticleToTags(articleId, tagsId).then(() => {
+                                res.status(201).send();
+                            }).catch((err) => {
+                                res.status(400).send(err);
+                            })
+                        } else {
+                            res.status(201).send();
+                        }
+                    }
+                });
+            } else
+                res.status(403).send();
+        }).catch(err => {
+            res.status(400).send(err);
         });
     });
 
@@ -190,23 +199,41 @@ router.route('/:articleId')
     .put(function (req, res) {
         let articleId = req.params.articleId;
         let article = req.body;
-        articleService.update(articleId, article).then(() => {
-            res.status(202).send();
-        }).catch((err) => {
-            console.error(err);
-            res.status(400).send();
+
+        /*Protect route */
+        let token = req.body.token || req.query.token || req.headers['authorization'];
+        tokenHandler.verifyAdministratorToken(token).then((result) => {
+            if (result) {
+                articleService.update(articleId, article).then(() => {
+                    res.status(202).send();
+                }).catch((err) => {
+                    console.error(err);
+                    res.status(400).send();
+                });
+            } else
+                res.status(403).send();
+        }).catch(err => {
+            res.status(400).send(err);
         });
     })
     /** DELETE: Remove document */
     .delete(function (req, res) {
         let articleId = req.params.articleId;
-        articleService.remove(articleId, function (err) {
-            if (err) {
-                res.status(404).send(err);
-            } else {
-                res.status(202).send();
-            }
-        });
+        let token = req.body.token || req.query.token || req.headers['authorization'];
+        tokenHandler.verifyAdministratorToken(token).then((result) => {
+            if (result) {
+                articleService.remove(articleId, function (err) {
+                    if (err) {
+                        res.status(404).send(err);
+                    } else {
+                        res.status(202).send();
+                    }
+                });
+            } else
+                res.status(403).send();
+        }).catch(err => {
+            res.status(400).send(err);
+        })
     });
 
 /**
