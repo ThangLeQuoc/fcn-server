@@ -34,13 +34,5 @@
         "bonsaiHostEndpoint": "https://nl1ipqpenk:ac4di1guiv@first-cluster-478030895.us-west-2.bonsaisearch.net",
         "index": "mercury",
         "article_type": "article"
-    },
-    "sendgrid": {
-        "apikey": "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",
-        "MercuryEmail": "silverhair.guy@gmail.com",
-        "requestPath": {
-            "recipients": "/v3/contactdb/recipients",
-            "lists": "/v3/contactdb/lists"
-        }
     }
 }

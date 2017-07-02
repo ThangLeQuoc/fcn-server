@@ -9,7 +9,6 @@ let userService = require('./user-service');
 let tagService = require('./tag-service');
 
 let esClient = require('./elasticsearch-client/elastic-client');
-let sendgridService = require('./sendgrid/sendgrid-service');
 
 let Q = require('q');
 
