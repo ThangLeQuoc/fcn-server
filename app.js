@@ -123,9 +123,12 @@ app.get('/', function (req, res, next) {
 });
 
 schedulerService.recalculateArticlesScore();
-esClient.initializeES().then(() => {
-  articleService.indexArticles();
-});
+esClient.flushAllIndices().then(() => {
+  esClient.initializeES().then(() => {
+    articleService.indexArticles();
+  });
+
+})
 
 let mode = config.get('mode');
 // console.log(chalk.yellow('Mode: '+mode));

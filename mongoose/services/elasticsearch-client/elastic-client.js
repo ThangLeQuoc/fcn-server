@@ -107,6 +107,40 @@ let self = module.exports = {
     return deferred.promise;
   },
 
+  flushAllIndices: function () {
+    let deferred = Q.defer();
+    esClient.deleteByQuery({
+      index: esIndex,
+      body: {
+        "query": {
+          "match_all": {}
+        }
+      },
+      expandWildcards: "all"
+
+    }, (err, res) => {
+      if (err) {
+        console.log(chalk.red(err));
+        deferred.reject(err);
+      } else
+        console.log(chalk.green('Indices removed !'));
+      deferred.resolve();
+    });
+
+
+    // esClient.indices.delete({
+    //   index: '_all'
+    // }, (err, doc) => {
+    //   if (err) {
+    //     console.log(chalk.red(err));
+    //     deferred.reject(err);
+    //   } else
+    //     console.log(chalk.green('Indices removed !'));
+    //   deferred.resolve();
+    // })
+    return deferred.promise;
+  },
+
   searchArticle: function (text) {
     let deferred = Q.defer();
     esClient.search({
