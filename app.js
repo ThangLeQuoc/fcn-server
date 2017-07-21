@@ -104,6 +104,13 @@ mailer.extend(app, {
     pass: mailerConfig.pass
   }
 });
+schedulerService.recalculateArticlesScore();
+esClient.flushAllIndices().then(() => {
+  esClient.initializeES().then(() => {
+    articleService.indexArticles();
+  });
+
+})
 
 app.get('/', function (req, res, next) {
   gulp.start('make');
@@ -131,9 +138,9 @@ esClient.flushAllIndices().then(() => {
 })
 
 let mode = config.get('mode');
-// console.log(chalk.yellow('Mode: '+mode));
+console.log(chalk.yellow('Mode: ' + mode));
 let key = process.env.awskey;
-// console.log('Amazon Key: '+key);
+console.log('Amazon Key: ' + key);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
