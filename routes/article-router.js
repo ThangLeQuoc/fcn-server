@@ -122,7 +122,7 @@ router.route('/users/:userId/suggestions')
  * --------Begin of TAG Request -----------------------------------------------------
  */
 
-router.route('/tags')
+router.route('/tags') 
     .get(function (req, res) {
         tagService.findAll(function (err, docs) {
             if (err) {
@@ -145,11 +145,10 @@ router.route('/tags')
 router.route('/tags/:tagId')
     .get(function (req, res) {
         let tagId = req.params.tagId;
-        tagService.findOne(tagId, function (err, doc) {
-            if (err) res.status(400).send(err);
-            else {
-                res.status(200).send(doc);
-            }
+        tagService.findOne(tagId).then((tag) => {
+            res.status(200).send(tag);
+        }).catch((err) => {
+            res.status(400).send(err);
         });
     })
     .put(function (req, res) {
@@ -262,7 +261,7 @@ router.route('/:articleId/comments')
         });
     });
 
-router.route('/:articleId/comments/:commentId')
+router.route('/:articleId/comments/:commentId') 
     .get(function (req, res) {
         let commentId = req.params.commentId;
         discussionService.findComment(commentId, function (err, doc) {
@@ -304,7 +303,7 @@ router.route('/:articleId/comments/:commentId')
  * Get participants in article
  */
 
-router.route('/:articleId/participants')
+router.route('/:articleId/participants') 
     .get(function (req, res) {
         let articleId = req.params.articleId;
         discussionService.getParticipants(articleId, function (err, doc) {

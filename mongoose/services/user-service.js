@@ -14,10 +14,6 @@ let tagService = require('./tag-service');
 let self = module.exports = {
 
 
-
-
-
-
     /**Find one user */
     findOne: function (userId, callback) {
         if (ObjectId.isValid(userId)) {

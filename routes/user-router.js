@@ -112,17 +112,6 @@ router.route('/')
             }
         });
     })
-    /** POST: Submit new user to server */
-    .post(function (req, res) {
-        let user = req.body;
-        userService.save(user, function (err) {
-            if (err) {
-                res.status(500).send(err);
-            } else {
-                res.status(201).send();
-            }
-        });
-    });
 
 router.route('/:userId')
     /** GET: Get user with _id */

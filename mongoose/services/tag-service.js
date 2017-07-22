@@ -13,13 +13,13 @@ let self = module.exports = {
     /** FInd one */
     findOne: function (tagId, callback) {
         let defer = Q.defer();
-
         if (ObjectId.isValid(tagId)) {
             Tag.findById(tagId, function (err, doc) {
                 if (err) defer.reject(err);
                 defer.resolve(doc);
             });
-        }
+        } else
+            defer.reject("Invalid Object ID");
         return defer.promise;
     },
 
