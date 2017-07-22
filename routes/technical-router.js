@@ -13,7 +13,7 @@ router.get('/keys/aws', function (req, res) {
       if (result) {
         let responseBody = {
           "aws_id": process.env.AWS_ID,
-          "aws_secret": process.env.AWS_SECRECT
+          "aws_secret": process.env.AWS_SECRET
         }
         res.status(200).send(responseBody);
       } else res.status(403).send();
