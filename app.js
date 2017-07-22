@@ -75,8 +75,8 @@ let mlabHost = config.get('database.mlab-host');
 let option = config.get('database.mlab-auth');
 
 
-// mongooseConnector.connectToMongo(mlabHost, option);
-mongooseConnector.connectToMongo(localhost);
+mongooseConnector.connectToMongo(mlabHost, option);
+//mongooseConnector.connectToMongo(localhost);
 
 /**
  * ------   End of database connection configuration ---------------------------------------
@@ -104,12 +104,15 @@ mailer.extend(app, {
     pass: mailerConfig.pass
   }
 });
+
+
 schedulerService.recalculateArticlesScore();
+schedulerService.reindexArticles();
+
 esClient.flushAllIndices().then(() => {
   esClient.initializeES().then(() => {
     articleService.indexArticles();
   });
-
 })
 
 app.get('/', function (req, res, next) {
@@ -129,18 +132,6 @@ app.get('/', function (req, res, next) {
   });
 });
 
-schedulerService.recalculateArticlesScore();
-esClient.flushAllIndices().then(() => {
-  esClient.initializeES().then(() => {
-    articleService.indexArticles();
-  });
-
-})
-
-let mode = config.get('mode');
-console.log(chalk.yellow('Mode: ' + mode));
-let key = process.env.awskey;
-console.log('Amazon Key: ' + key);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

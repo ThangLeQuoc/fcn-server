@@ -126,18 +126,6 @@ let self = module.exports = {
         console.log(chalk.green('Indices removed !'));
       deferred.resolve();
     });
-
-
-    // esClient.indices.delete({
-    //   index: '_all'
-    // }, (err, doc) => {
-    //   if (err) {
-    //     console.log(chalk.red(err));
-    //     deferred.reject(err);
-    //   } else
-    //     console.log(chalk.green('Indices removed !'));
-    //   deferred.resolve();
-    // })
     return deferred.promise;
   },
 
