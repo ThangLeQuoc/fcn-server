@@ -5,6 +5,7 @@ let articleService = require('../mongoose/services/article-service');
 let roleService = require('../mongoose/services/role-service');
 let notificationService = require('../mongoose/services/notification/notification-service');
 
+let tokenHandler = require('../mongoose/technical/token-handler');
 const chalk = require('chalk');
 /**
  * User Router
@@ -85,10 +86,22 @@ router.route('/roles/:roleId')
  */
 
 
+
 /**
  * ------------ BEGIN OF INFORMATIONAL USER REQUEST  ---------------------------------------------------
  */
 router.route('/')
+    .all((req, res, next) => {
+        let token = req.body.token || req.query.token || req.headers['authorization'];
+        tokenHandler.verifyAdministratorToken(token).then((result) => {
+            if (result)
+                next();
+            else
+                res.status(403).send();
+        }).catch(err => {
+            res.status(400).send(err);
+        });
+    })
     /**GET: Get all users */
     .get(function (req, res) {
         userService.findAll(function (err, docs) {
@@ -99,17 +112,6 @@ router.route('/')
             }
         });
     })
-    /** POST: Submit new user to server */
-    .post(function (req, res) {
-        let user = req.body;
-        userService.save(user, function (err) {
-            if (err) {
-                res.status(500).send(err);
-            } else {
-                res.status(201).send();
-            }
-        });
-    });
 
 router.route('/:userId')
     /** GET: Get user with _id */
@@ -164,9 +166,17 @@ router.route('/:userId/image')
 router.route('/:userId/togglestatus')
     .put(function (req, res) {
         let userId = req.params.userId;
-        userService.toggleEnable(userId, function (err) {
-            if (err) res.status(404).send(err);
-            res.status(202).send();
+        let token = req.body.token || req.query.token || req.headers['authorization'];
+        tokenHandler.verifyAdministratorToken(token).then((result) => {
+            if (result) {
+                userService.toggleEnable(userId, function (err) {
+                    if (err) res.status(404).send(err);
+                    console.log(chalk.blue('toggle success'));
+                    res.status(202).send();
+                });
+            } else res.status(403).send()
+        }).catch(err => {
+            res.status(400).send(err);
         });
     });
 

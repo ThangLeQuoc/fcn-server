@@ -5,6 +5,8 @@ let articleService = require('../mongoose/services/article-service');
 let tagService = require('../mongoose/services/tag-service');
 let userService = require('../mongoose/services/user-service');
 let discussionService = require('../mongoose/services/discussion-service');
+let esClient = require('../mongoose/services/elasticsearch-client/elastic-client');
+let tokenHandler = require('../mongoose/technical/token-handler');
 
 const chalk = require('chalk');
 
@@ -35,9 +37,11 @@ router.route('/initDiscussion')
         res.status(202).send();
     });
 
+/**
+ * Elastic Search 
+ */
 
 router.get('/search', function (req, res) {
-    console.log(chalk.green('Do search'));
     let queryText = req.query.q;
     esClient.searchArticle(queryText).then((result) => {
         res.status(200).send(result.hits.hits);
@@ -73,24 +77,33 @@ router.route('/')
     /** POST: Submit new article to server*/
     .post(function (req, res) {
         let article = req.body;
-        articleService.save(article, function (err, articleId) {
-            if (err) {
-                res.status(400).send(err);
-            } else {
-                if (article.tags) {
-                    let tagsId = [];
-                    for (let tag of article.tags) {
-                        tagsId.push(tag.tag_id);
-                    }
-                    tagService.pushArticleToTags(articleId, tagsId).then(() => {
-                        res.status(201).send();
-                    }).catch((err) => {
+        /*Protect route */
+        let token = req.body.token || req.query.token || req.headers['authorization'];
+        tokenHandler.verifyAdministratorToken(token).then((result) => {
+            if (result) {
+                articleService.save(article, function (err, articleId) {
+                    if (err) {
                         res.status(400).send(err);
-                    })
-                } else {
-                    res.status(201).send();
-                }
-            }
+                    } else {
+                        if (article.tags) {
+                            let tagsId = [];
+                            for (let tag of article.tags) {
+                                tagsId.push(tag.tag_id);
+                            }
+                            tagService.pushArticleToTags(articleId, tagsId).then(() => {
+                                res.status(201).send();
+                            }).catch((err) => {
+                                res.status(400).send(err);
+                            })
+                        } else {
+                            res.status(201).send();
+                        }
+                    }
+                });
+            } else
+                res.status(403).send();
+        }).catch(err => {
+            res.status(400).send(err);
         });
     });
 
@@ -109,7 +122,7 @@ router.route('/users/:userId/suggestions')
  * --------Begin of TAG Request -----------------------------------------------------
  */
 
-router.route('/tags')
+router.route('/tags') 
     .get(function (req, res) {
         tagService.findAll(function (err, docs) {
             if (err) {
@@ -132,11 +145,10 @@ router.route('/tags')
 router.route('/tags/:tagId')
     .get(function (req, res) {
         let tagId = req.params.tagId;
-        tagService.findOne(tagId, function (err, doc) {
-            if (err) res.status(400).send(err);
-            else {
-                res.status(200).send(doc);
-            }
+        tagService.findOne(tagId).then((tag) => {
+            res.status(200).send(tag);
+        }).catch((err) => {
+            res.status(400).send(err);
         });
     })
     .put(function (req, res) {
@@ -186,23 +198,41 @@ router.route('/:articleId')
     .put(function (req, res) {
         let articleId = req.params.articleId;
         let article = req.body;
-        articleService.update(articleId, article).then(() => {
-            res.status(202).send();
-        }).catch((err) => {
-            console.error(err);
-            res.status(400).send();
+
+        /*Protect route */
+        let token = req.body.token || req.query.token || req.headers['authorization'];
+        tokenHandler.verifyAdministratorToken(token).then((result) => {
+            if (result) {
+                articleService.update(articleId, article).then(() => {
+                    res.status(202).send();
+                }).catch((err) => {
+                    console.error(err);
+                    res.status(400).send();
+                });
+            } else
+                res.status(403).send();
+        }).catch(err => {
+            res.status(400).send(err);
         });
     })
     /** DELETE: Remove document */
     .delete(function (req, res) {
         let articleId = req.params.articleId;
-        articleService.remove(articleId, function (err) {
-            if (err) {
-                res.status(404).send(err);
-            } else {
-                res.status(202).send();
-            }
-        });
+        let token = req.body.token || req.query.token || req.headers['authorization'];
+        tokenHandler.verifyAdministratorToken(token).then((result) => {
+            if (result) {
+                articleService.remove(articleId, function (err) {
+                    if (err) {
+                        res.status(404).send(err);
+                    } else {
+                        res.status(202).send();
+                    }
+                });
+            } else
+                res.status(403).send();
+        }).catch(err => {
+            res.status(400).send(err);
+        })
     });
 
 /**
@@ -231,7 +261,7 @@ router.route('/:articleId/comments')
         });
     });
 
-router.route('/:articleId/comments/:commentId')
+router.route('/:articleId/comments/:commentId') 
     .get(function (req, res) {
         let commentId = req.params.commentId;
         discussionService.findComment(commentId, function (err, doc) {
@@ -273,7 +303,7 @@ router.route('/:articleId/comments/:commentId')
  * Get participants in article
  */
 
-router.route('/:articleId/participants')
+router.route('/:articleId/participants') 
     .get(function (req, res) {
         let articleId = req.params.articleId;
         discussionService.getParticipants(articleId, function (err, doc) {

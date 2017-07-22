@@ -3,7 +3,7 @@ let articleService = require('./article-service');
 let Q = require('q');
 const chalk = require('chalk');
 let config = require('config');
-
+let esClient = require('../services/elasticsearch-client/elastic-client');
 
 
 let self = module.exports = {
@@ -21,4 +21,16 @@ let self = module.exports = {
       });
     }, interval);
   },
+
+  reindexArticles() {
+    let interval = config.get('articlesScoreUpdateInterval');
+    setInterval(() => {
+      esClient.flushAllIndices().then(() => {
+        esClient.initializeES().then(() => {
+          articleService.indexArticles();
+        });
+      })
+    }, interval);
+
+  }
 }

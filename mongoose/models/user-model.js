@@ -8,7 +8,6 @@ let UserSchema = new Schema({
         last_name: String,
         phone: String
     },
-    profile_image: String,
     password: {
         type: String,
         required: true
@@ -17,9 +16,6 @@ let UserSchema = new Schema({
         type: String,
         required: true
     },
-    facebook: String,
-    twitter: String,
-    googleplus: String,
     enabled: Boolean,
     verified: Boolean,
     role: {

@@ -22,7 +22,6 @@ let self = module.exports = {
     esClient.indices.exists({
       index: esIndex
     }).then((result) => {
-      console.log(chalk.blue('Index Mercury exist: ' + result));
       if (result === false) {
         esClient.indices.create({
           index: esIndex
@@ -41,6 +40,9 @@ let self = module.exports = {
               type: "string"
             },
             "header_image": {
+              type: "string"
+            },
+            "category": {
               type: "string"
             },
             "content": {
@@ -78,11 +80,9 @@ let self = module.exports = {
         "title": article.title,
         "description": article.description,
         "header_image": article.header_image,
+        "category": article.category,
         "content": article.content,
-        "tags": article.tags,
-        "suggest": {
-          "input": article.title.split(" ")
-        }
+        "tags": article.tags
       }
     }).then((result, err) => {
       if (err) {
@@ -107,6 +107,28 @@ let self = module.exports = {
     return deferred.promise;
   },
 
+  flushAllIndices: function () {
+    let deferred = Q.defer();
+    esClient.deleteByQuery({
+      index: esIndex,
+      body: {
+        "query": {
+          "match_all": {}
+        }
+      },
+      expandWildcards: "all"
+
+    }, (err, res) => {
+      if (err) {
+        console.log(chalk.red(err));
+        deferred.reject(err);
+      } else
+        console.log(chalk.green('Indices removed !'));
+      deferred.resolve();
+    });
+    return deferred.promise;
+  },
+
   searchArticle: function (text) {
     let deferred = Q.defer();
     esClient.search({
@@ -122,7 +144,6 @@ let self = module.exports = {
     }).then((result, err) => {
       if (err)
         deferred.reject(err);
-
       deferred.resolve(result);
     });
     return deferred.promise;

@@ -1,5 +1,7 @@
 /** User Service: provide methods on User Model */
 let User = require('../models/user-model');
+let Role = require('../models/role-model');
+
 let ObjectId = require('mongoose').Types.ObjectId;
 let Q = require('q');
 let gravatar = require('gravatar');
@@ -10,6 +12,7 @@ const chalk = require('chalk');
 let tagService = require('./tag-service');
 
 let self = module.exports = {
+
 
     /**Find one user */
     findOne: function (userId, callback) {
@@ -39,6 +42,15 @@ let self = module.exports = {
             if (err) return callback(err);
             return callback(null, docs);
         });
+    },
+
+    findAllPromise: function () {
+        let deferred = Q.defer();
+        User.find((err, users) => {
+            if (err) deferred.reject(err);
+            deferred.resolve(users);
+        });
+        return deferred.promise;
     },
 
     /** Save new User document */
@@ -86,7 +98,7 @@ let self = module.exports = {
          */
         if (ObjectId.isValid(userId)) {
             self.findOnePromise(userId).then(function (doc) {
-                let currentStatus = doc.enable;
+                let currentStatus = doc.enabled;
                 self.setAccountStatus(userId, currentStatus).then(function () {
                     return callback(null);
                 }, function (err) {
@@ -105,8 +117,9 @@ let self = module.exports = {
     setAccountStatus: function (userId, currentStatus) {
         let defer = Q.defer();
         let newStatus = !currentStatus;
+        console.log(chalk.blue('Current status: '+currentStatus));
         User.findByIdAndUpdate(userId, {
-            enable: newStatus
+            "enabled": newStatus
         }, function (err) {
             if (err) return defer.reject(err);
             return defer.resolve(null);
@@ -358,7 +371,7 @@ let self = module.exports = {
                 "bookmarks": articleId
             }
         }, function (err, user) {
-            if(err) deferred.reject(err);
+            if (err) deferred.reject(err);
             deferred.resolve(user);
         });
         return deferred.promise;
@@ -387,5 +400,43 @@ let self = module.exports = {
             }
         });
         return defer.promise;
+    },
+
+    findTargetedUserInterestedInTags: function (targetTags) {
+        let deferred = Q.defer();
+        let targetedUsers = [];
+        self.findAllPromise().then((users) => {
+            let promises = users.map((user) => {
+                return self.findFavoriteTags(user._id).then((tags) => {
+                    tags.map(favoriteTag => {
+                        for (let tag of targetTags) {
+                            if (favoriteTag.tag_id.toString() === tag.tag_id.toString()) {
+                                targetedUsers.push(user);
+                                return Q.resolve(user);
+                            }
+                        }
+                    });
+                });
+            });
+            return Q.all(promises);
+        }).then((result) => {
+            deferred.resolve(targetedUsers);
+        });
+        return deferred.promise;
+    },
+
+    checkUserIsAdministrator(userId) {
+        User.findById(userId).populate('role').exec((err, user) => {
+            if (err) deferred.reject(err);
+            if (!user.role)
+                deferred.resolve(false);
+            else if (user.role.name == "Administrator") {
+                deferred.resolve(true);
+            }
+
+            deferred.resolve(false);
+        })
+        let deferred = Q.defer();
+        return deferred.promise;
     }
 }
