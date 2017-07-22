@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const chalk = require('chalk');
 let tokenHandler = require('../mongoose/technical/token-handler');
+require('dotenv').config()
 
 /* GET users listing. */
 router.get('/keys/aws', function (req, res) {
@@ -11,8 +12,8 @@ router.get('/keys/aws', function (req, res) {
     tokenHandler.verifyAdministratorToken(token).then((result) => {
       if (result) {
         let responseBody = {
-          "aws_id": process.env.aws_id,
-          "aws_secret": process.env.aws_secret
+          "aws_id": process.env.AWS_ID,
+          "aws_secret": process.env.AWS_SECRECT
         }
         res.status(200).send(responseBody);
       } else res.status(403).send();
