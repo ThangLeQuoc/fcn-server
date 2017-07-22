@@ -9,9 +9,15 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 var api = require('./routes/api');
 var mongooseConnector = require('./mongoose/mongoose-connection');
+var cons = require('consolidate');
+var mailer = require('express-mailer');
+
 var app = express();
 
 let config = require('config');
+let mailerConfig = require('./config.json');
+var gulp = require('gulp');
+require('./gulpfile');
 
 const chalk = require('chalk');
 let esClient = require('./mongoose/services/elasticsearch-client/elastic-client');
@@ -34,7 +40,9 @@ let schedulerService = require('./mongoose/services/scheduler-service');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.engine('html', cons.swig);
+app.set('view engine', 'html');
+// app.set('view engine', 'jade');
 
 app.use(cors());
 
@@ -68,14 +76,14 @@ let option = config.get('database.mlab-auth');
 
 
 mongooseConnector.connectToMongo(mlabHost, option);
-// mongooseConnector.connectToMongo(localhost);
+//mongooseConnector.connectToMongo(localhost);
 
 /**
  * ------   End of database connection configuration ---------------------------------------
  */
 
 //configure path link
-app.use('/', index);
+// app.use('/', index);
 app.use('/users', users);
 app.use('/api/v1', api);
 
@@ -85,15 +93,45 @@ app.use('/api/v2/users', userRouter);
 app.use('/api/v2/notifications', notificationRouter);
 app.use('/api/v2/technical', technicalRouter);
 
-schedulerService.recalculateArticlesScore();
-esClient.initializeES().then(() => {
-  articleService.indexArticles();
+mailer.extend(app, {
+  from: 'no-reply@mercury-team.com',
+  host: 'smtp.gmail.com', // hostname
+  secureConnection: true, // use SSL
+  port: 465, // port for secure SMTP
+  transportMethod: 'SMTP', // default is SMTP. Accepts anything that nodemailer accepts
+  auth: {
+    user: mailerConfig.user,
+    pass: mailerConfig.pass
+  }
 });
 
-let mode = config.get('mode');
-console.log(chalk.yellow('Mode: '+mode));
-let key = process.env.awskey;
-console.log('Amazon Key: '+key); 
+
+schedulerService.recalculateArticlesScore();
+schedulerService.reindexArticles();
+
+esClient.flushAllIndices().then(() => {
+  esClient.initializeES().then(() => {
+    articleService.indexArticles();
+  });
+})
+
+app.get('/', function (req, res, next) {
+  gulp.start('make');
+  app.mailer.send('email', {
+    to: 'cuongnm265@gmail.com', // REQUIRED. This can be a comma delimited string just like a normal email to field.
+    subject: 'Test Email', // REQUIRED.
+    otherProperty: 'Other Property' // All additional properties are also passed to the template as local variables.
+  }, function (err) {
+    if (err) {
+      // handle error
+      console.log(err);
+      res.send('There was an error sending the email');
+      return;
+    }
+    res.send('Email Sent');
+  });
+});
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -110,7 +148,7 @@ app.use(function (err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  // res.render('error');
 });
 
 module.exports = app;
