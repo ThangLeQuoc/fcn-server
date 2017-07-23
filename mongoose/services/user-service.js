@@ -404,14 +404,14 @@ let self = module.exports = {
 
     findTargetedUserInterestedInTags: function (targetTags) {
         let deferred = Q.defer();
-        let targetedUsers = [];
+        let targetedUserEmails = [];
         self.findAllPromise().then((users) => {
             let promises = users.map((user) => {
                 return self.findFavoriteTags(user._id).then((tags) => {
                     tags.map(favoriteTag => {
                         for (let tag of targetTags) {
                             if (favoriteTag.tag_id.toString() === tag.tag_id.toString()) {
-                                targetedUsers.push(user);
+                                targetedUserEmails.push(user.email);
                                 return Q.resolve(user);
                             }
                         }
@@ -420,7 +420,12 @@ let self = module.exports = {
             });
             return Q.all(promises);
         }).then((result) => {
-            deferred.resolve(targetedUsers);
+            let emails = [];
+            targetedUserEmails.map(mail=>{
+                if(emails.indexOf(mail) < 0)
+                    emails.push(mail);
+            })
+            deferred.resolve(emails);
         });
         return deferred.promise;
     },

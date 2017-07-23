@@ -16,8 +16,10 @@ var app = express();
 
 let config = require('config');
 let mailerConfig = require('./config.json');
+
 var gulp = require('gulp');
 require('./gulpfile');
+
 
 const chalk = require('chalk');
 let esClient = require('./mongoose/services/elasticsearch-client/elastic-client');
@@ -45,6 +47,7 @@ app.set('view engine', 'html');
 // app.set('view engine', 'jade');
 
 app.use(cors());
+
 
 
 // uncomment after placing your favicon in /public
@@ -93,17 +96,19 @@ app.use('/api/v2/users', userRouter);
 app.use('/api/v2/notifications', notificationRouter);
 app.use('/api/v2/technical', technicalRouter);
 
-mailer.extend(app, {
-  from: 'no-reply@mercury-team.com',
-  host: 'smtp.gmail.com', // hostname
-  secureConnection: true, // use SSL
-  port: 465, // port for secure SMTP
-  transportMethod: 'SMTP', // default is SMTP. Accepts anything that nodemailer accepts
-  auth: {
-    user: mailerConfig.user,
-    pass: mailerConfig.pass
-  }
-});
+
+// mailer.extend(app, {
+//   from: 'no-reply@mercury-team.com',
+//   host: 'smtp.gmail.com', // hostname
+//   secureConnection: true, // use SSL
+//   port: 465, // port for secure SMTP
+//   transportMethod: 'SMTP', // default is SMTP. Accepts anything that nodemailer accepts
+//   auth: {
+//     user: mailerConfig.user,
+//     pass: mailerConfig.pass
+//   }
+// });
+
 
 
 schedulerService.recalculateArticlesScore();
@@ -115,8 +120,11 @@ esClient.flushAllIndices().then(() => {
   });
 })
 
+
+
 app.get('/', function (req, res, next) {
   gulp.start('make');
+
   app.mailer.send('email', {
     to: 'cuongnm265@gmail.com', // REQUIRED. This can be a comma delimited string just like a normal email to field.
     subject: 'Test Email', // REQUIRED.

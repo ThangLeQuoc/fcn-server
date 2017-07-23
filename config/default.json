@@ -4,7 +4,7 @@
     "jwt": {
         "secret": "MercuryNewsIsAnAwesomePlaceToStay"
     },
-
+    "host": "https://mercuryman.herokuapp.com",   
     "database": {
         "localhost": "mongodb://localhost/frogcoffeedb",
         "mlab-host": "ds135790.mlab.com:35790/frogcoffeedb",

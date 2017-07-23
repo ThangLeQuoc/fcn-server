@@ -8,6 +8,7 @@ let discussionService = require('./discussion-service')
 let userService = require('./user-service');
 let tagService = require('./tag-service');
 
+let mailerService = require('./express-mailer/mailer-service');
 let esClient = require('./elasticsearch-client/elastic-client');
 
 let Q = require('q');
@@ -135,7 +136,11 @@ let self = module.exports = {
             if (err) return callback(err);
             else {
                 userService.findTargetedUserInterestedInTags(article.tags).then((interestedUsers) => {
-                    //sendgridService.createListWithRecipients(article.title, interestedUsers);
+                    mailerService.createTemplateMail(article).then(() => {
+                        mailerService.sendMailToTargetUsers(interestedUsers).then(() => {
+                            
+                        });
+                    });
                 });
                 esClient.addArticleToIndex(article);
                 self.initDiscussion(article._id).then(function () {
