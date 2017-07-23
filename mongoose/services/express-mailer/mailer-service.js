@@ -108,7 +108,7 @@ let self = module.exports = {
 
 
   generateArticleURL: function (article) {
-    let url = config.get("host") + '/news/' + article.category + '/' + article._id;
+    let url = config.get("host") + '/#/news/' + article.category + '/' + article._id;
     return url;
   }
 
