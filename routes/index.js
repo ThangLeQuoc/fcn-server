@@ -6,11 +6,7 @@ var app = express();
 var mailer = require('express-mailer');
 /* GET home page. */
 router.get('/', function (req, res, next) {
-  // res.render('index', {
-  //   title: 'Frog-coffee-news Server'
-  // });
-  
-  res.status(200).send();
+  res.status(200).send('Mercury Mind is operating normally');
 });
 
 module.exports = router;

@@ -86,7 +86,7 @@ mongooseConnector.connectToMongo(mlabHost, option);
  */
 
 //configure path link
-// app.use('/', index);
+app.use('/', index);
 app.use('/users', users);
 app.use('/api/v1', api);
 
@@ -120,25 +120,6 @@ esClient.flushAllIndices().then(() => {
   });
 })
 
-
-
-app.get('/', function (req, res, next) {
-  gulp.start('make');
-
-  app.mailer.send('email', {
-    to: 'cuongnm265@gmail.com', // REQUIRED. This can be a comma delimited string just like a normal email to field.
-    subject: 'Test Email', // REQUIRED.
-    otherProperty: 'Other Property' // All additional properties are also passed to the template as local variables.
-  }, function (err) {
-    if (err) {
-      // handle error
-      console.log(err);
-      res.send('There was an error sending the email');
-      return;
-    }
-    res.send('Email Sent');
-  });
-});
 
 
 // catch 404 and forward to error handler
