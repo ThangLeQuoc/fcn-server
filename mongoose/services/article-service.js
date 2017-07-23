@@ -136,14 +136,13 @@ let self = module.exports = {
             if (err) return callback(err);
             else {
                 userService.findTargetedUserInterestedInTags(article.tags).then((interestedUsers) => {
-                    console.log(chalk.yellow('Targeted User Emails'));
-                    console.log(interestedUsers);
+                    mailerService.createTemplateMail(article).then(() => {
+                        mailerService.sendMailToTargetUsers(interestedUsers).then(() => {
+                            
+                        });
+                    });
                 });
                 esClient.addArticleToIndex(article);
-                mailerService.createTemplateMail(article).then(()=>{
-                    mailerService.sendMailToTargetUsers();
-                });
-
                 self.initDiscussion(article._id).then(function () {
                     return callback(null, article._id);
                 }, function (err) {

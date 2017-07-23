@@ -8,7 +8,12 @@ var fs = require('fs');
 var cons = require('consolidate');
 var mailer = require('express-mailer');
 var gulp = require('gulp');
-require('./gulpfile');
+
+var handlebars = require('gulp-compile-handlebars');
+var rename = require('gulp-rename');
+
+
+// require('./gulpfile');
 
 var Q = require('q');
 var config = require('config');
@@ -19,7 +24,8 @@ const chalk = require('chalk');
 let hostname = config.get('host');
 
 // view engine setup
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__filename, '/../views'));
+
 app.engine('html', cons.swig);
 app.set('view engine', 'html');
 // app.set('view engine', 'jade');
@@ -62,30 +68,41 @@ let self = module.exports = {
       link: self.generateArticleURL(article)
     });
 
-    let jsonArticle = JSON.stringify(template);
-    fs.writeFile('./mongoose/services/express-mailer/articleBody.json', jsonArticle, 'utf8', (err) => {
-      if (err) deferred.reject(err);
-      deferred.resolve();
+    gulp.task('makeEmail', function () {
+      gulp.src('body.handlebars')
+        .pipe(handlebars(template))
+        .pipe(rename('email.html'))
+        .pipe(gulp.dest('mongoose/services/express-mailer/views')).on('end', () => {
+          deferred.resolve();
+        });
     });
+
+    gulp.start('makeEmail');
+
     return deferred.promise;
   },
 
-  sendMailToTargetUsers: function () {
-    gulp.start('makeEmail');
- 
+  sendMailToTargetUsers: function (mails) {
+    let deferred = Q.defer()
+    if (mails.length == 0) {
+      deferred.reject("empty mails");
+    } else {
+      let concatMails = mails.join(",");
 
-    app.mailer.send('email', {
-      to: 'silverhair.guy@gmail.com', // REQUIRED. This can be a comma delimited string just like a normal email to field.
-      subject: 'Test Email', // REQUIRED.
-      otherProperty: 'Other Property' // All additional properties are also passed to the template as local variables.
-    }, function (err) {
-      if (err) {
-        // handle error
-        console.log(err);
-      }
-      console.log(chalk.blue('Mail sent'));
-    });
 
+      app.mailer.send('email', {
+        to: concatMails, // REQUIRED. This can be a comma delimited string just like a normal email to field.
+        subject: 'Featured article for you', // REQUIRED.
+        otherProperty: 'Other Property' // All additional properties are also passed to the template as local variables.
+      }, function (err) {
+        if (err) {
+          console.log(err);
+          deferred.reject(err);
+        }
+        deferred.resolve();
+      });
+    }
+    return deferred.promise;
   },
 
 
