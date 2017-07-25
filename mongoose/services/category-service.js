@@ -75,5 +75,18 @@ let self = module.exports = {
             return defer.resolve(doc);
         });
         return defer.promise;
+    },
+
+    getNameById: function (id) {
+        let defer = Q.defer();
+        Category.findById(id, (err, doc) => {
+            if (err) defer.reject(err);
+            if (doc) {
+                let name = doc.name.toLowerCase();
+                defer.resolve(name);
+            }
+            defer.reject();
+        });
+        return defer.promise;
     }
 }

@@ -12,6 +12,8 @@ var gulp = require('gulp');
 var handlebars = require('gulp-compile-handlebars');
 var rename = require('gulp-rename');
 
+let categoryService = require('../category-service');
+
 
 // require('./gulpfile');
 
@@ -57,29 +59,28 @@ mailer.extend(app, {
 let self = module.exports = {
   createTemplateMail: function (article) {
     let deferred = Q.defer();
-    let path = './articleBody.json';
     let template = {
       articles: []
     };
 
-    template.articles.push({
-      title: article.title,
-      description: article.description,
-      banner: article.header_image,
-      link: self.generateArticleURL(article)
+    self.generateArticleURL(article).then((url) => {
+      template.articles.push({
+        title: article.title,
+        description: article.description,
+        banner: article.header_image,
+        link: url
+      });
+
+      gulp.task('makeEmail', function () {
+        gulp.src('body.handlebars')
+          .pipe(handlebars(template))
+          .pipe(rename('email.html'))
+          .pipe(gulp.dest('mongoose/services/express-mailer/views')).on('end', () => {
+            deferred.resolve();
+          });
+      });
+      gulp.start('makeEmail');
     });
-
-    gulp.task('makeEmail', function () {
-      gulp.src('body.handlebars')
-        .pipe(handlebars(template))
-        .pipe(rename('email.html'))
-        .pipe(gulp.dest('mongoose/services/express-mailer/views')).on('end', () => {
-          deferred.resolve();
-        });
-    });
-
-    gulp.start('makeEmail');
-
     return deferred.promise;
   },
 
@@ -92,9 +93,9 @@ let self = module.exports = {
 
 
       app.mailer.send('email', {
-        to: concatMails, // REQUIRED. This can be a comma delimited string just like a normal email to field.
-        subject: 'Featured article for you', // REQUIRED.
-        otherProperty: 'Other Property' // All additional properties are also passed to the template as local variables.
+        to: concatMails, 
+        subject: 'Featured article for you', 
+        otherProperty: 'Other Property' 
       }, function (err) {
         if (err) {
           console.log(err);
@@ -109,8 +110,14 @@ let self = module.exports = {
 
 
   generateArticleURL: function (article) {
-    let url = config.get("host") + '/#/news/' + article.category + '/' + article._id;
-    return url;
+    let deferred = Q.defer();
+    categoryService.getNameById(article.category).then((categoryName) => {
+      let url = config.get("host") + '/#/news/' + categoryName + '/' + article._id;
+      deferred.resolve(url);
+    }).catch((err) => {
+      deferred.reject(err);
+    });
+    return deferred.promise;
   }
 
 }
