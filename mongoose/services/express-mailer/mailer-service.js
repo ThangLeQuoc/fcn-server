@@ -35,7 +35,8 @@ app.use(cors());
 
 
 
-
+console.log(chalk.yellow(process.env.MAIL_USERNAME));
+console.log(chalk.green(process.env.MAIL_PASSWORD));
 
 mailer.extend(app, {
   from: 'no-reply@mercury-team.com',
@@ -44,8 +45,8 @@ mailer.extend(app, {
   port: 465, // port for secure SMTP
   transportMethod: 'SMTP', // default is SMTP. Accepts anything that nodemailer accepts
   auth: {
-    user: process.env.MAIL_USERNAME,
-    pass: process.env.MAIL_PASSWORD
+    user: "mercurycrew64@gmail.com",
+    pass: "mercurycrew6446"
   }
 });
 

@@ -479,7 +479,6 @@ let self = module.exports = {
 
     getArticlesWithoutRatedScore(articleList) {
         let articles = [];
-        console.log(articleList);
         articleList.map((stat) => {
             articles.push(stat.article);
         });

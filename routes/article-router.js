@@ -271,7 +271,6 @@ router.route('/:articleId/comments/:commentId')
     })
     .put(function (req, res) {
         let comment = req.body;
-        console.log(chalk.yellow(comment.text));
         let articleId = req.params.articleId;
         comment._id = req.params.commentId;
         discussionService.editComment(articleId, comment, function (err) {
